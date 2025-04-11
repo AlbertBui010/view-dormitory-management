@@ -1,0 +1,7 @@
+@import "@fontsource/poppins"; /* Import đầy đủ font */
+@import "@fontsource/poppins/400.css"; /* Regular */
+@import "@fontsource/poppins/700.css"; /* Bold */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
