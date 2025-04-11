@@ -1,1 +1,0 @@
-# Client - Dormitory Management STU
