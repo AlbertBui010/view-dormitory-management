@@ -1,5 +1,7 @@
 import React from "react";
+import { useMemo } from "react";
 import { FaFilter, FaSearch } from "react-icons/fa";
+import { roomTypeLabels, roomStatusLabels } from "../../../constant/constants";
 
 const RoomFilters = ({
   searchTerm,
@@ -8,7 +10,25 @@ const RoomFilters = ({
   handleFilterChange,
   resetFilters,
   dormitories,
+  rooms,
 }) => {
+  const uniqueRoomTypes = useMemo(() => {
+    if (!Array.isArray(rooms)) return [];
+
+    // Lọc ra các loại phòng duy nhất
+    return [...new Set(rooms.map((room) => room.room_type))]
+      .filter((type) => type) // Loại bỏ các giá trị null/undefined
+      .sort(); // Sắp xếp theo thứ tự alphabet
+  }, [rooms]);
+
+  const uniqueStatuses = useMemo(() => {
+    if (!Array.isArray(rooms)) return [];
+
+    return [...new Set(rooms.map((room) => room.status))]
+      .filter((status) => status)
+      .sort();
+  }, [rooms]);
+
   return (
     <div className="bg-white rounded-lg shadow mb-6">
       <div className="p-4 border-b border-gray-200">
@@ -57,9 +77,11 @@ const RoomFilters = ({
               className="w-full p-2 border border-gray-300 rounded-md"
             >
               <option value="">Tất cả loại phòng</option>
-              <option value="Standard">Tiêu chuẩn</option>
-              <option value="Premium">Cao cấp</option>
-              <option value="Deluxe">Đặc biệt</option>
+              {uniqueRoomTypes.map((type) => (
+                <option key={type} value={type}>
+                  {roomTypeLabels[type] || type}
+                </option>
+              ))}
             </select>
           </div>
 
@@ -72,9 +94,11 @@ const RoomFilters = ({
               className="w-full p-2 border border-gray-300 rounded-md"
             >
               <option value="">Tất cả trạng thái</option>
-              <option value="available">Còn trống</option>
-              <option value="occupied">Đã thuê</option>
-              <option value="maintenance">Đang bảo trì</option>
+              {uniqueStatuses.map((status) => (
+                <option key={status} value={status}>
+                  {roomStatusLabels[status] || status}
+                </option>
+              ))}
             </select>
           </div>
         </div>

@@ -13,6 +13,7 @@ import AddRoomModal from "./room/AddRoomModal";
 import EditRoomModal from "./room/EditRoomModal";
 import DeleteRoomModal from "./room/DeleteRoomModal";
 import Spinner from "../Spinner";
+import { roomStatusLabels } from "../../constant/constants";
 
 const Rooms = () => {
   const navigate = useNavigate();
@@ -44,7 +45,7 @@ const Rooms = () => {
     room_type: "",
     price: 0,
     facility: "",
-    status: "available",
+    status: "AVAILABLE",
   });
 
   // State for filters
@@ -262,16 +263,16 @@ const Rooms = () => {
   const handleAddRoom = async (roomData) => {
     try {
       setIsLoading(true);
-      const newRoom = await roomService.createRoom(roomData);
-
-      if (newRoom && newRoom.status && newRoom.message) {
-        toast.error(newRoom.message);
+      const response = await roomService.createRoom(roomData);
+      console.log("::::", newRoom);
+      if (response && newRoom.status === 401) {
+        toast.error(response.message);
         return false;
       }
 
       // Chuẩn hóa dữ liệu mới
       const normalizedNewRoom = {
-        ...newRoom,
+        ...response,
         price: newRoom.price || 0,
         building: getDormitoryName(newRoom.dormitory_id),
       };
@@ -296,6 +297,8 @@ const Rooms = () => {
         selectedRoom.id,
         roomData
       );
+
+      console.log(":::", updatedRoom);
 
       if (updatedRoom && updatedRoom.status && updatedRoom.message) {
         toast.error(updatedRoom.message);
@@ -386,6 +389,7 @@ const Rooms = () => {
         handleFilterChange={handleFilterChange}
         resetFilters={resetFilters}
         dormitories={dormitories}
+        rooms={rooms}
       />
 
       {/* Rooms Table Component */}

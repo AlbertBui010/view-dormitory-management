@@ -6,8 +6,7 @@ const roomService = {
   getAllRooms: async () => {
     try {
       const response = await axiosClient.get(ROOM_BASE_URL);
-      console.log("Rooom", response);
-      return response.data;
+      return response;
     } catch (error) {
       console.error("Error fetching rooms:", error);
 
@@ -60,7 +59,7 @@ const roomService = {
   createRoom: async (roomData) => {
     try {
       const response = await axiosClient.post(ROOM_BASE_URL, roomData);
-      return response.data;
+      return response;
     } catch (error) {
       console.error("Error creating room:", error);
 
@@ -95,7 +94,7 @@ const roomService = {
         `${ROOM_BASE_URL}/${id}`,
         roomData
       );
-      return response.data;
+      return response;
     } catch (error) {
       console.error("Error updating room:", error);
 

@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import ModalLayout from "./ModalLayout";
+import { roomStatusLabels, roomTypeLabels } from "../../../constant/constants";
 
 const AddRoomModal = ({ dormitories, onClose, onSubmit }) => {
   const [formData, setFormData] = useState({
@@ -10,7 +11,7 @@ const AddRoomModal = ({ dormitories, onClose, onSubmit }) => {
     room_type: "",
     price: 0,
     facility: "",
-    status: "available",
+    status: "AVAILABLE",
   });
 
   // Handle form input changes
@@ -102,9 +103,11 @@ const AddRoomModal = ({ dormitories, onClose, onSubmit }) => {
               className="w-full p-2 border border-gray-300 rounded-md"
             >
               <option value="">Chọn loại phòng</option>
-              <option value="Standard">Tiêu chuẩn</option>
-              <option value="Premium">Cao cấp</option>
-              <option value="Deluxe">Đặc biệt</option>
+              {Object.entries(roomTypeLabels).map(([value, label]) => (
+                <option key={value} value={value}>
+                  {label}
+                </option>
+              ))}
             </select>
           </div>
 
@@ -150,9 +153,11 @@ const AddRoomModal = ({ dormitories, onClose, onSubmit }) => {
               required
               className="w-full p-2 border border-gray-300 rounded-md"
             >
-              <option value="available">Còn trống</option>
-              <option value="occupied">Đã thuê</option>
-              <option value="maintenance">Đang bảo trì</option>
+              {Object.entries(roomStatusLabels).map(([value, label]) => (
+                <option key={value} value={value}>
+                  {label}
+                </option>
+              ))}
             </select>
           </div>
         </div>

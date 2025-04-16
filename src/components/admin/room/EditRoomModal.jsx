@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import ModalLayout from "./ModalLayout";
+import { roomStatusLabels, roomTypeLabels } from "../../../constant/constants";
 
 const EditRoomModal = ({
   dormitories,
@@ -103,9 +104,11 @@ const EditRoomModal = ({
               className="w-full p-2 border border-gray-300 rounded-md"
             >
               <option value="">Chọn loại phòng</option>
-              <option value="Standard">Tiêu chuẩn</option>
-              <option value="Premium">Cao cấp</option>
-              <option value="Deluxe">Đặc biệt</option>
+              {Object.entries(roomTypeLabels).map(([value, label]) => (
+                <option key={value} value={value}>
+                  {label}
+                </option>
+              ))}
             </select>
           </div>
 
@@ -167,9 +170,11 @@ const EditRoomModal = ({
               required
               className="w-full p-2 border border-gray-300 rounded-md"
             >
-              <option value="available">Còn trống</option>
-              <option value="occupied">Đã thuê</option>
-              <option value="maintenance">Đang bảo trì</option>
+              {Object.entries(roomStatusLabels).map(([value, label]) => (
+                <option key={value} value={value}>
+                  {label}
+                </option>
+              ))}
             </select>
           </div>
         </div>
