@@ -10,7 +10,8 @@ const dormitoryService = {
   getAllDormitories: async () => {
     try {
       const response = await axiosClient.get(DORMITORY_BASE_URL);
-      return response.data;
+      console.log("res:", response);
+      return response;
     } catch (error) {
       console.error("Error fetching dormitories:", error);
       throw error;
@@ -43,7 +44,7 @@ const dormitoryService = {
         DORMITORY_BASE_URL,
         dormitoryData
       );
-      return response.data;
+      return response;
     } catch (error) {
       console.error("Error creating dormitory:", error);
       throw error;
@@ -62,7 +63,7 @@ const dormitoryService = {
         `${DORMITORY_BASE_URL}/${id}`,
         dormitoryData
       );
-      return response.data;
+      return response;
     } catch (error) {
       console.error(`Error updating dormitory with id ${id}:`, error);
       throw error;
@@ -77,7 +78,7 @@ const dormitoryService = {
   deleteDormitory: async (id) => {
     try {
       const response = await axiosClient.delete(`${DORMITORY_BASE_URL}/${id}`);
-      return response.data;
+      return response;
     } catch (error) {
       console.error(`Error deleting dormitory with id ${id}:`, error);
       throw error;

@@ -15,8 +15,13 @@ import { toast } from "react-toastify";
 import api from "../../api";
 import Spinner from "../Spinner";
 import EmptyState from "../EmptyState";
+import dormitoryService from "../../services/admin/dormitoryService";
+import formatDate from "../../utils/formatDate";
+import { useNavigate } from "react-router-dom";
 
 const Dormitory = () => {
+  const navigate = useNavigate();
+
   // State declarations
   const [dormitories, setDormitories] = useState([]);
   const [filteredDormitories, setFilteredDormitories] = useState([]);
@@ -48,9 +53,20 @@ const Dormitory = () => {
     const fetchDormitories = async () => {
       setIsLoading(true);
       try {
-        const response = await api.get("/dormitories");
-        setDormitories(response.data);
-        setFilteredDormitories(response.data);
+        const data = await dormitoryService.getAllDormitories();
+
+        // Kiểm tra nếu có lỗi token hết hạn
+        if (data && data.status === 401) {
+          // Redirect về trang login
+          toast.error("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.");
+          setIsLoading(false);
+          // Navigate tới trang login, nếu bạn dùng react-router-dom
+          navigate("/login");
+          return;
+        }
+
+        setDormitories(data);
+        setFilteredDormitories(data);
         setIsLoading(false);
       } catch (error) {
         console.error("Error fetching dormitories:", error);
@@ -135,7 +151,6 @@ const Dormitory = () => {
       name: dormitory.name,
       address: dormitory.address,
       total_rooms: dormitory.total_rooms,
-      updated_by: "admin", // In real app, get from auth context
     });
     setShowEditModal(true);
   };
@@ -157,15 +172,37 @@ const Dormitory = () => {
     e.preventDefault();
     try {
       setIsLoading(true);
-      const response = await api.post("/dormitories", formData);
-      setDormitories([...dormitories, response.data]);
+
+      // Sử dụng dormitoryService thay vì gọi API trực tiếp
+      const newDormitory = await dormitoryService.createDormitory(formData);
+
+      // Cập nhật state danh sách ký túc xá
+      setDormitories([...dormitories, newDormitory]);
+
+      // Đóng modal và reset form
       setShowAddModal(false);
       resetFormData();
+
+      // Hiển thị thông báo thành công
       toast.success("Ký túc xá đã được thêm thành công!");
+
+      // Tắt trạng thái loading
       setIsLoading(false);
     } catch (error) {
       console.error("Error adding dormitory:", error);
-      toast.error("Không thể thêm ký túc xá. Vui lòng thử lại sau.");
+
+      // Hiển thị thông báo lỗi với chi tiết nếu có
+      let errorMessage = "Không thể thêm ký túc xá. Vui lòng thử lại sau.";
+      if (
+        error.response &&
+        error.response.data &&
+        error.response.data.message
+      ) {
+        errorMessage = error.response.data.message;
+      }
+      toast.error(errorMessage);
+
+      // Tắt trạng thái loading
       setIsLoading(false);
     }
   };
@@ -175,12 +212,12 @@ const Dormitory = () => {
     e.preventDefault();
     try {
       setIsLoading(true);
-      const response = await api.put(
-        `/dormitories/${selectedDormitory.id}`,
+      const response = await dormitoryService.updateDormitory(
+        selectedDormitory.id,
         formData
       );
       const updatedDormitories = dormitories.map((dorm) =>
-        dorm.id === selectedDormitory.id ? response.data : dorm
+        dorm.id === selectedDormitory.id ? response : dorm
       );
       setDormitories(updatedDormitories);
       setShowEditModal(false);
@@ -197,7 +234,7 @@ const Dormitory = () => {
   const handleDeleteDormitory = async () => {
     try {
       setIsLoading(true);
-      await api.delete(`/dormitories/${selectedDormitory.id}`);
+      await dormitoryService.deleteDormitory(selectedDormitory.id);
       const updatedDormitories = dormitories.filter(
         (dorm) => dorm.id !== selectedDormitory.id
       );
@@ -221,12 +258,6 @@ const Dormitory = () => {
       return <FaSortUp className="h-3 w-3 text-blue-500" />;
     }
     return <FaSortDown className="h-3 w-3 text-blue-500" />;
-  };
-
-  // Format date
-  const formatDate = (dateString) => {
-    const options = { day: "2-digit", month: "2-digit", year: "numeric" };
-    return new Date(dateString).toLocaleDateString("vi-VN", options);
   };
 
   return (
@@ -328,11 +359,11 @@ const Dormitory = () => {
                   <th
                     scope="col"
                     className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                    onClick={() => requestSort("created_at")}
+                    onClick={() => requestSort("createdAt")}
                   >
                     <div className="flex items-center">
                       Ngày tạo
-                      {getSortIcon("created_at")}
+                      {getSortIcon("createdAt")}
                     </div>
                   </th>
                   <th
@@ -344,45 +375,46 @@ const Dormitory = () => {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {filteredDormitories.map((dorm) => (
-                  <tr key={dorm.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {dorm.id}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                      {dorm.name}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {dorm.total_rooms}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {formatDate(dorm.created_at)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <button
-                        onClick={() => openViewModal(dorm)}
-                        className="text-blue-600 hover:text-blue-900 mx-1"
-                        title="Xem chi tiết"
-                      >
-                        <FaEye />
-                      </button>
-                      <button
-                        onClick={() => openEditModal(dorm)}
-                        className="text-yellow-600 hover:text-yellow-900 mx-1"
-                        title="Chỉnh sửa"
-                      >
-                        <FaEdit />
-                      </button>
-                      <button
-                        onClick={() => openDeleteModal(dorm)}
-                        className="text-red-600 hover:text-red-900 mx-1"
-                        title="Xóa"
-                      >
-                        <FaTrash />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
+                {filteredDormitories &&
+                  filteredDormitories?.map((dorm) => (
+                    <tr key={dorm.id} className="hover:bg-gray-50">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {dorm.id}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        {dorm.name}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {dorm.total_rooms}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {formatDate(dorm.createdAt)}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <button
+                          onClick={() => openViewModal(dorm)}
+                          className="text-blue-600 hover:text-blue-900 mx-1"
+                          title="Xem chi tiết"
+                        >
+                          <FaEye />
+                        </button>
+                        <button
+                          onClick={() => openEditModal(dorm)}
+                          className="text-yellow-600 hover:text-yellow-900 mx-1"
+                          title="Chỉnh sửa"
+                        >
+                          <FaEdit />
+                        </button>
+                        <button
+                          onClick={() => openDeleteModal(dorm)}
+                          className="text-red-600 hover:text-red-900 mx-1"
+                          title="Xóa"
+                        >
+                          <FaTrash />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
               </tbody>
             </table>
           </div>
@@ -601,7 +633,7 @@ const Dormitory = () => {
             <div className="mb-4">
               <p className="text-sm text-gray-500 mb-1">Ngày tạo</p>
               <p className="text-lg">
-                {formatDate(selectedDormitory.created_at)}
+                {formatDate(selectedDormitory.createdAt)}
               </p>
             </div>
             {selectedDormitory.updated_by && (
@@ -610,11 +642,11 @@ const Dormitory = () => {
                 <p className="text-lg">{selectedDormitory.updated_by}</p>
               </div>
             )}
-            {selectedDormitory.updated_at && (
+            {selectedDormitory.updatedAt && (
               <div className="mb-6">
                 <p className="text-sm text-gray-500 mb-1">Ngày cập nhật</p>
                 <p className="text-lg">
-                  {formatDate(selectedDormitory.updated_at)}
+                  {formatDate(selectedDormitory.updatedAt)}
                 </p>
               </div>
             )}

@@ -12,6 +12,7 @@ import Students from "./components/admin/Students";
 import RoomAllocation from "./components/admin/RoomAllocation";
 import Payments from "./components/admin/Payments";
 import Dormitory from "./components/admin/Dormitory";
+import Reports from "./components/admin/Reports";
 
 function App() {
   return (
