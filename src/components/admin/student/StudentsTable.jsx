@@ -7,6 +7,7 @@ import {
   FaSortAmountDown,
 } from "react-icons/fa";
 import StatusBadge from "./StatusBadge";
+import { studentMajorsLabels } from "../../../constant/constants";
 
 const StudentsTable = ({
   students,
@@ -142,7 +143,7 @@ const StudentsTable = ({
                   )}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {student.major}
+                  {studentMajorsLabels[student.major]}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <StatusBadge status={student.status} />

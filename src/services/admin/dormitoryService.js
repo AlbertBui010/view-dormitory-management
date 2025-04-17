@@ -10,7 +10,6 @@ const dormitoryService = {
   getAllDormitories: async () => {
     try {
       const response = await axiosClient.get(DORMITORY_BASE_URL);
-      console.log("res:", response);
       return response;
     } catch (error) {
       console.error("Error fetching dormitories:", error);

@@ -1,5 +1,9 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { FaFilter, FaSearch } from "react-icons/fa";
+import {
+  studentMajorsLabels,
+  studentStatusLabels,
+} from "../../../constant/constants";
 
 const StudentFilters = ({
   searchTerm,
@@ -7,7 +11,25 @@ const StudentFilters = ({
   filters,
   handleFilterChange,
   resetFilters,
+  students,
 }) => {
+  const uniqueStudentMajors = useMemo(() => {
+    if (!Array.isArray(students)) return [];
+
+    // Lọc ra các loại phòng duy nhất
+    return [...new Set(students.map((student) => student.major))]
+      .filter((type) => type) // Loại bỏ các giá trị null/undefined
+      .sort(); // Sắp xếp theo thứ tự alphabet
+  }, [students]);
+
+  const uniqueStudentStatuses = useMemo(() => {
+    if (!Array.isArray(students)) return [];
+
+    return [...new Set(students.map((student) => student.status))]
+      .filter((status) => status)
+      .sort();
+  }, [students]);
+
   return (
     <div className="bg-white rounded-lg shadow mb-6">
       <div className="p-4 border-b border-gray-200">
@@ -53,13 +75,11 @@ const StudentFilters = ({
               className="w-full p-2 border border-gray-300 rounded-md"
             >
               <option value="">Tất cả ngành học</option>
-              <option value="Công nghệ thông tin">Công nghệ thông tin</option>
-              <option value="Quản trị kinh doanh">Quản trị kinh doanh</option>
-              <option value="Kỹ thuật điện">Kỹ thuật điện</option>
-              <option value="Marketing">Marketing</option>
-              <option value="Công nghệ sinh học">Công nghệ sinh học</option>
-              <option value="Kinh tế học">Kinh tế học</option>
-              <option value="Ngôn ngữ Anh">Ngôn ngữ Anh</option>
+              {uniqueStudentMajors.map((status) => (
+                <option key={status} value={status}>
+                  {studentMajorsLabels[status] || status}
+                </option>
+              ))}
             </select>
           </div>
 
@@ -72,10 +92,11 @@ const StudentFilters = ({
               className="w-full p-2 border border-gray-300 rounded-md"
             >
               <option value="">Tất cả trạng thái</option>
-              <option value="active">Đang học</option>
-              <option value="graduated">Đã tốt nghiệp</option>
-              <option value="suspended">Đình chỉ</option>
-              <option value="onleave">Tạm nghỉ</option>
+              {uniqueStudentStatuses.map((status) => (
+                <option key={status} value={status}>
+                  {studentStatusLabels[status] || status}
+                </option>
+              ))}
             </select>
           </div>
         </div>

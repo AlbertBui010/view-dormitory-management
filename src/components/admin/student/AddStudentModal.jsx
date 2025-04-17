@@ -1,5 +1,10 @@
 import React, { useState } from "react";
 import ModalLayout from "../ModalLayout";
+import {
+  studentMajorsLabels,
+  studentStatusLabels,
+  studentYearLabels,
+} from "../../../constant/constants";
 
 const AddStudentModal = ({ onClose, onSubmit }) => {
   const [formData, setFormData] = useState({
@@ -12,7 +17,8 @@ const AddStudentModal = ({ onClose, onSubmit }) => {
     address: "",
     major: "",
     year: "",
-    status: "active",
+    status: "ACTIVE",
+    password: "",
   });
 
   // Handle form input changes
@@ -148,13 +154,11 @@ const AddStudentModal = ({ onClose, onSubmit }) => {
               className="w-full p-2 border border-gray-300 rounded-md"
             >
               <option value="">Chọn ngành học</option>
-              <option value="Công nghệ thông tin">Công nghệ thông tin</option>
-              <option value="Quản trị kinh doanh">Quản trị kinh doanh</option>
-              <option value="Kỹ thuật điện">Kỹ thuật điện</option>
-              <option value="Marketing">Marketing</option>
-              <option value="Công nghệ sinh học">Công nghệ sinh học</option>
-              <option value="Kinh tế học">Kinh tế học</option>
-              <option value="Ngôn ngữ Anh">Ngôn ngữ Anh</option>
+              {Object.entries(studentMajorsLabels).map(([value, label]) => (
+                <option key={value} value={value}>
+                  {label}
+                </option>
+              ))}
             </select>
           </div>
 
@@ -170,10 +174,11 @@ const AddStudentModal = ({ onClose, onSubmit }) => {
               className="w-full p-2 border border-gray-300 rounded-md"
             >
               <option value="">Chọn năm học</option>
-              <option value="Năm 1">Năm 1</option>
-              <option value="Năm 2">Năm 2</option>
-              <option value="Năm 3">Năm 3</option>
-              <option value="Năm 4">Năm 4</option>
+              {Object.entries(studentYearLabels).map(([value, label]) => (
+                <option key={value} value={value}>
+                  {label}
+                </option>
+              ))}
             </select>
           </div>
 
@@ -188,11 +193,26 @@ const AddStudentModal = ({ onClose, onSubmit }) => {
               required
               className="w-full p-2 border border-gray-300 rounded-md"
             >
-              <option value="active">Đang học</option>
-              <option value="graduated">Đã tốt nghiệp</option>
-              <option value="suspended">Đình chỉ</option>
-              <option value="onleave">Tạm nghỉ</option>
+              {Object.entries(studentStatusLabels).map(([value, label]) => (
+                <option key={value} value={value}>
+                  {label}
+                </option>
+              ))}
             </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Password
+            </label>
+            <input
+              type="password"
+              name="password"
+              value={formData.password}
+              onChange={handleInputChange}
+              required
+              className="w-full p-2 border border-gray-300 rounded-md"
+            />
           </div>
         </div>
 

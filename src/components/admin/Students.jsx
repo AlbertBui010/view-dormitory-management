@@ -11,8 +11,11 @@ import EditStudentModal from "./student/EditStudentModal";
 import DeleteStudentModal from "./student/DeleteStudentModal";
 import ViewStudentModal from "./student/ViewStudentModal";
 import Spinner from "../Spinner";
+import studentService from "../../services/admin/studentService";
+import { useNavigate } from "react-router-dom";
 
 const Students = () => {
+  const navigate = useNavigate();
   // State for students data
   const [students, setStudents] = useState([]);
   const [filteredStudents, setFilteredStudents] = useState([]);
@@ -42,7 +45,7 @@ const Students = () => {
     address: "",
     major: "",
     year: "",
-    status: "active",
+    status: "ACTIVE",
   });
 
   // State for filters
@@ -67,35 +70,28 @@ const Students = () => {
     const fetchStudents = async () => {
       setIsLoading(true);
       try {
-        // In a real app, you would fetch this data from your API
-        // Example: const response = await studentService.getAllStudents();
+        const data = await studentService.getAllStudents();
 
-        // Mock data for demonstration
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+        // Kiểm tra nếu token hết hạn
+        if (data && data.status === 401) {
+          toast.error("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.");
+          navigate("/login");
+          return;
+        }
 
-        const mockStudents = [
-          {
-            id: 1,
-            id: "SV001",
-            name: "Nguyễn Văn An",
-            email: "an.nguyen@example.com",
-            phone: "0912345678",
-            dob: "2000-05-15",
-            gender: "Nam",
-            address: "123 Đường Nguyễn Huệ, Quận 1, TP.HCM",
-            major: "Công nghệ thông tin",
-            year: "Năm 3",
-            status: "active",
-            roomAssigned: "A101",
-          },
-          // ... các mock data khác
-        ];
-
-        setStudents(mockStudents);
-        setFilteredStudents(mockStudents);
+        if (Array.isArray(data)) {
+          setStudents(data);
+          setFilteredStudents(data);
+        } else {
+          toast.error("Không thể tải dữ liệu sinh viên");
+          setStudents([]);
+          setFilteredStudents([]);
+        }
       } catch (error) {
         console.error("Error fetching students:", error);
-        toast.error("Failed to load students data");
+        toast.error("Không thể tải dữ liệu sinh viên. Vui lòng thử lại sau.");
+        setStudents([]);
+        setFilteredStudents([]);
       } finally {
         setIsLoading(false);
       }
@@ -119,11 +115,7 @@ const Students = () => {
         (student) =>
           student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
           student.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          student.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          (student.roomAssigned &&
-            student.roomAssigned
-              .toLowerCase()
-              .includes(searchTerm.toLowerCase()))
+          student.email.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
@@ -197,17 +189,10 @@ const Students = () => {
     try {
       // In a real app, you would send this data to your API
       // Example: await studentService.createStudent(formData);
-
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 500));
-
-      // Generate a new ID (in a real app, the server would do this)
-      const newId = Math.max(...students.map((student) => student.id)) + 1;
-
+      const response = await studentService.createStudent(formData);
       const newStudent = {
-        id: newId,
+        id: response.id,
         ...formData,
-        roomAssigned: null, // New students don't have a room assigned by default
       };
 
       setStudents([...students, newStudent]);
@@ -222,52 +207,61 @@ const Students = () => {
   };
 
   // Update student
-  const handleUpdateStudent = async (formData) => {
+  const handleUpdateStudent = async (studentData) => {
     try {
-      // In a real app, you would send this data to your API
-      // Example: await studentService.updateStudent(selectedStudent.id, formData);
+      setIsLoading(true);
+      const updatedStudent = await studentService.updateStudent(
+        selectedStudent.id,
+        studentData
+      );
 
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      if (updatedStudent && updatedStudent.status === 401) {
+        toast.error(updatedStudent.message);
+        navigate("/login");
+        return false;
+      }
 
       const updatedStudents = students.map((student) =>
-        student.id === selectedStudent.id
-          ? { ...student, ...formData, roomAssigned: student.roomAssigned }
-          : student
+        student.id === selectedStudent.id ? updatedStudent : student
       );
 
       setStudents(updatedStudents);
-      setShowEditModal(false);
-      toast.success("Thông tin sinh viên đã được cập nhật");
+      toast.success("Cập nhật sinh viên thành công");
       return true;
     } catch (error) {
       console.error("Error updating student:", error);
-      toast.error("Không thể cập nhật thông tin sinh viên");
+      toast.error("Không thể cập nhật sinh viên. Vui lòng thử lại sau.");
       return false;
+    } finally {
+      setIsLoading(false);
     }
   };
 
   // Delete student
   const handleDeleteStudent = async () => {
     try {
-      // In a real app, you would send this request to your API
-      // Example: await studentService.deleteStudent(selectedStudent.id);
+      setIsLoading(true);
+      const result = await studentService.deleteStudent(selectedStudent.id);
 
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      if (result && result.status === 401) {
+        toast.error(result.message);
+        navigate("/login");
+        return false;
+      }
 
       const updatedStudents = students.filter(
         (student) => student.id !== selectedStudent.id
       );
 
       setStudents(updatedStudents);
-      setShowDeleteModal(false);
-      toast.success("Sinh viên đã được xóa khỏi hệ thống");
+      toast.success("Xóa sinh viên thành công");
       return true;
     } catch (error) {
       console.error("Error deleting student:", error);
-      toast.error("Không thể xóa sinh viên");
+      toast.error("Không thể xóa sinh viên. Vui lòng thử lại sau.");
       return false;
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -331,6 +325,7 @@ const Students = () => {
         filters={filters}
         handleFilterChange={handleFilterChange}
         resetFilters={resetFilters}
+        students={students}
       />
 
       {/* Students Table */}

@@ -1,5 +1,9 @@
 import DatePicker from "react-datepicker";
 import { FaSave, FaTimes } from "react-icons/fa";
+import {
+  paymentMethodLabels,
+  paymentStatusLabels,
+} from "../../../constant/constants";
 
 const AddPaymentModal = ({
   showAddModal,
@@ -66,7 +70,7 @@ const AddPaymentModal = ({
                 <option value="">Chọn sinh viên</option>
                 {students.map((student) => (
                   <option key={student.id} value={student.id}>
-                    {student.fullName} ({student.id})
+                    {student.name} ({student.id})
                   </option>
                 ))}
               </select>
@@ -87,7 +91,7 @@ const AddPaymentModal = ({
                 <option value="">Chọn phòng</option>
                 {rooms.map((room) => (
                   <option key={room.id} value={room.id}>
-                    {room.room_number} (Tòa {room.building})
+                    {room.room_number} (Tòa {room.Dormitory.name})
                   </option>
                 ))}
               </select>
@@ -138,9 +142,11 @@ const AddPaymentModal = ({
                 required
               >
                 <option value="pending">Chờ thanh toán</option>
-                <option value="paid">Đã thanh toán</option>
-                <option value="overdue">Quá hạn</option>
-                <option value="cancelled">Đã hủy</option>
+                {Object.entries(paymentStatusLabels).map(([value, label]) => (
+                  <option key={value} value={value}>
+                    {label}
+                  </option>
+                ))}
               </select>
             </div>
 
@@ -156,9 +162,11 @@ const AddPaymentModal = ({
                 className="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 required
               >
-                <option value="cash">Tiền mặt</option>
-                <option value="bank_transfer">Chuyển khoản</option>
-                <option value="momo">Ví Momo</option>
+                {Object.entries(paymentMethodLabels).map(([value, label]) => (
+                  <option key={value} value={value}>
+                    {label}
+                  </option>
+                ))}
               </select>
             </div>
           </div>

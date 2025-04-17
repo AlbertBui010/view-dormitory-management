@@ -39,42 +39,46 @@ import ReceiptModal from "./payment/ReceiptModal";
 import api from "../../api";
 import Spinner from "../Spinner";
 import EmptyState from "../EmptyState";
+import StatusBadge from "./payment/StatusBadge";
+
+import roomService from "../../services/admin/roomService";
+import studentService from "../../services/admin/studentService";
 
 // Status Badge component
-const StatusBadge = ({ status }) => {
-  switch (status) {
-    case "paid":
-      return (
-        <span className="px-2 py-1 rounded-full text-xs bg-green-100 text-green-800 font-medium">
-          Đã thanh toán
-        </span>
-      );
-    case "pending":
-      return (
-        <span className="px-2 py-1 rounded-full text-xs bg-yellow-100 text-yellow-800 font-medium">
-          Chờ thanh toán
-        </span>
-      );
-    case "overdue":
-      return (
-        <span className="px-2 py-1 rounded-full text-xs bg-red-100 text-red-800 font-medium">
-          Quá hạn
-        </span>
-      );
-    case "cancelled":
-      return (
-        <span className="px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-800 font-medium">
-          Đã hủy
-        </span>
-      );
-    default:
-      return (
-        <span className="px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-800 font-medium">
-          {status}
-        </span>
-      );
-  }
-};
+// const StatusBadge = ({ status }) => {
+//   switch (status) {
+//     case "paid":
+//       return (
+//         <span className="px-2 py-1 rounded-full text-xs bg-green-100 text-green-800 font-medium">
+//           Đã thanh toán
+//         </span>
+//       );
+//     case "pending":
+//       return (
+//         <span className="px-2 py-1 rounded-full text-xs bg-yellow-100 text-yellow-800 font-medium">
+//           Chờ thanh toán
+//         </span>
+//       );
+//     case "overdue":
+//       return (
+//         <span className="px-2 py-1 rounded-full text-xs bg-red-100 text-red-800 font-medium">
+//           Quá hạn
+//         </span>
+//       );
+//     case "cancelled":
+//       return (
+//         <span className="px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-800 font-medium">
+//           Đã hủy
+//         </span>
+//       );
+//     default:
+//       return (
+//         <span className="px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-800 font-medium">
+//           {status}
+//         </span>
+//       );
+//   }
+// };
 
 const Payments = () => {
   // State declarations
@@ -115,11 +119,9 @@ const Payments = () => {
     room_id: "",
     amount: "",
     payment_date: new Date(),
-    payment_status: "pending",
-    payment_method: "cash",
+    payment_status: "PENDING",
+    payment_method: "CASH",
     notes: "",
-    created_by: "admin", // This would come from auth context in a real app
-    updated_by: null,
   });
 
   // State for filters
@@ -146,22 +148,21 @@ const Payments = () => {
       setIsLoading(true);
       try {
         // In a real app, this would be API calls
-        const roomsResponse = await api.get("/rooms");
-        const studentsResponse = await api.get("/students");
+        // const roomsResponse = await api.get("/rooms");
+        const roomsResponse = await roomService.getAllRooms();
+        const studentsResponse = await studentService.getAllStudents();
         const paymentsResponse = await api.get("/payments");
 
         // For demonstration purposes, using setTimeout to simulate API delay
         setTimeout(() => {
-          setRooms(roomsResponse.data);
-          setStudents(studentsResponse.data);
+          setRooms(roomsResponse);
+          setStudents(studentsResponse);
 
           // Enrich payment data with student and room info
           const enrichedPayments = paymentsResponse.data.map((payment) => ({
             ...payment,
-            student: studentsResponse.data.find(
-              (s) => s.id === payment.student_id
-            ),
-            room: roomsResponse.data.find((r) => r.id === payment.room_id),
+            student: studentsResponse.find((s) => s.id === payment.student_id),
+            room: roomsResponse.find((r) => r.id === payment.room_id),
           }));
 
           setPayments(enrichedPayments);
