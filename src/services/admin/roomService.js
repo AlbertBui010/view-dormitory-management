@@ -63,25 +63,11 @@ const roomService = {
     } catch (error) {
       console.error("Error creating room:", error);
 
-      // Xử lý lỗi cụ thể từ API
-      if (error.response) {
-        if (error.response.status === 401) {
-          return {
-            status: 401,
-            message: "Token has expired or insufficient permissions.",
-          };
-        } else if (error.response.status === 403) {
-          return {
-            status: 403,
-            message: "You don't have permission to create rooms.",
-          };
-        } else if (error.response.data && error.response.data.message) {
-          // Trả về thông báo lỗi từ API
-          return {
-            status: error.response.status,
-            message: error.response.data.message,
-          };
-        }
+      if (error.data) {
+        throw {
+          status: error.status,
+          message: error.data.error,
+        };
       }
 
       throw error;

@@ -264,17 +264,17 @@ const Rooms = () => {
     try {
       setIsLoading(true);
       const response = await roomService.createRoom(roomData);
-      console.log("::::", newRoom);
-      if (response && newRoom.status === 401) {
+      if (response && response.status === 401) {
         toast.error(response.message);
+        navigate("/login");
         return false;
       }
 
       // Chuẩn hóa dữ liệu mới
       const normalizedNewRoom = {
         ...response,
-        price: newRoom.price || 0,
-        building: getDormitoryName(newRoom.dormitory_id),
+        price: response.price || 0,
+        building: getDormitoryName(response.dormitory_id),
       };
 
       setRooms([...rooms, normalizedNewRoom]);
@@ -331,27 +331,22 @@ const Rooms = () => {
   const handleDeleteRoom = async () => {
     try {
       setIsLoading(true);
-      const result = await roomService.deleteRoom(selectedRoom.id);
-
-      if (result && result.status && result.message) {
-        toast.error(result.message);
-        return false;
-      }
-
+      await roomService.deleteRoom(selectedRoom.id);
       const updatedRooms = rooms.filter((room) => room.id !== selectedRoom.id);
       setRooms(updatedRooms);
       toast.success("Xóa phòng thành công");
       return true;
     } catch (error) {
       console.error("Error deleting room:", error);
-      toast.error("Không thể xóa phòng. Vui lòng thử lại sau.");
+      toast.error(error?.data?.error);
       return false;
     } finally {
       setIsLoading(false);
+      setShowDeleteModal(false);
     }
   };
 
-  // Helper function to get dormitory name
+  // Helper function to get dormitory
   const getDormitoryName = (dormitoryId) => {
     const dormitory = dormitories.find(
       (dorm) => dorm.id === Number(dormitoryId)
