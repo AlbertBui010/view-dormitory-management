@@ -29,7 +29,7 @@ const EditStudentModal = ({ initialData, onClose, onSubmit }) => {
     if (success) onClose();
   };
 
-  console.log("INIT", initialData);
+  console.log("FORM DATA:", formData);
 
   return (
     <ModalLayout title="Cập nhật thông tin sinh viên" onClose={onClose}>

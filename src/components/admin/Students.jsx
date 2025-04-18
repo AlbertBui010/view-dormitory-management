@@ -45,7 +45,7 @@ const Students = () => {
     address: "",
     major: "",
     year: "",
-    status: "ACTIVE",
+    status: "DANGHOC",
   });
 
   // State for filters
@@ -187,8 +187,6 @@ const Students = () => {
   // Add new student
   const handleAddStudent = async (formData) => {
     try {
-      // In a real app, you would send this data to your API
-      // Example: await studentService.createStudent(formData);
       const response = await studentService.createStudent(formData);
       const newStudent = {
         id: response.id,
@@ -201,7 +199,7 @@ const Students = () => {
       return true;
     } catch (error) {
       console.error("Error adding student:", error);
-      toast.error("Không thể thêm sinh viên mới");
+      toast.error(error?.data?.message);
       return false;
     }
   };

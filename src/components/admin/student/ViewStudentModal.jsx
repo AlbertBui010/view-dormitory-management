@@ -28,7 +28,7 @@ const ViewStudentModal = ({ student, onClose, onEdit }) => {
   };
 
   return (
-    <ModalLayout title="Thông tin chi tiết sinh viên" onClose={onClose}>
+    <ModalLayout onClose={onClose}>
       <div className="flex justify-between items-start">
         <h3 className="text-lg font-medium text-gray-900 mb-4">
           Thông tin chi tiết sinh viên

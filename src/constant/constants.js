@@ -61,3 +61,26 @@ export const paymentStatusLabels = {
   OVERDUE: "Quá hạn",
   CANCELLED: "Đã hủy",
 };
+
+// Rooms Allocation
+export const roomAllocationStatus = {
+  DANGKY: "Đăng ký",
+  DANGO: "Đang ở",
+  DAKETTHUC: "Đã kết thúc",
+  DAHUY: "Đã hủy",
+};
+
+export const roomAllocationStatusClasses = {
+  DANGKY: "bg-yellow-100 text-yellow-800",
+  DANGO: "bg-green-100 text-green-800",
+  DAKETTHUC: "bg-blue-100 text-blue-800",
+  DAHUY: "bg-red-100 text-red-800",
+};
+
+export const getStatusText = (statusCode) => {
+  return roomAllocationStatus[statusCode] || statusCode;
+};
+
+export const getStatusClass = (statusCode) => {
+  return roomAllocationStatusClasses[statusCode] || "bg-gray-100 text-gray-800";
+};
