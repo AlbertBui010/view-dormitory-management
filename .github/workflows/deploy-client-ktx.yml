@@ -47,6 +47,16 @@ jobs:
           port: ${{ secrets.PORT_PRODUCTION }}
           source: "dist/*"
           target: "/home/ktx/dorm-client"
+      - name: 🔧 Set correct permissions
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.HOST_PRODUCTION }}
+          username: ${{ secrets.USERNAME_PRODUCTION }}
+          password: ${{ secrets.PASSWORD_PRODUCTION }}
+          port: ${{ secrets.PORT_PRODUCTION }}
+          script: |
+            sudo chown -R ktx:ktx /home/ktx/dorm-client
+            sudo chmod -R 755 /home/ktx/dorm-client
 
       - name: 🔁 Restart Nginx
         uses: appleboy/ssh-action@v1.2.0
@@ -56,4 +66,4 @@ jobs:
           password: ${{ secrets.PASSWORD_PRODUCTION }}
           port: ${{ secrets.PORT_PRODUCTION }}
           script: |
-            sudo systemctl reload nginx
+            echo ${{ secrets.PASSWORD_PRODUCTION }} | sudo -S systemctl reload nginx
