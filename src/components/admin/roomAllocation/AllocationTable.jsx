@@ -100,11 +100,11 @@ const AllocationTable = ({
             <th
               scope="col"
               className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-              onClick={() => requestSort("created_at")}
+              onClick={() => requestSort("createdAt")}
             >
               <div className="flex items-center">
                 Ngày tạo
-                {sortConfig.key === "created_at" &&
+                {sortConfig.key === "createdAt" &&
                   (sortConfig.direction === "ascending" ? (
                     <FaSortAmountUp className="ml-1" />
                   ) : (
@@ -157,7 +157,7 @@ const AllocationTable = ({
                   <StatusBadge status={allocation.status} />
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {formatDate(allocation.created_at)}
+                  {formatDate(allocation.createdAt)}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                   {allocation.status === "DANGO" && (

@@ -134,7 +134,6 @@ const Dormitory = () => {
       name: "",
       address: "",
       total_rooms: 0,
-      created_by: "admin",
     });
   };
 

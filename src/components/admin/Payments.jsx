@@ -1,31 +1,15 @@
 import React, { useState, useEffect } from "react";
 import {
   FaPlus,
-  FaSearch,
-  FaFilter,
-  FaTimes,
-  FaSort,
-  FaSortUp,
-  FaSortDown,
-  FaEye,
-  FaPrint,
-  FaEdit,
-  FaTrash,
-  FaCheck,
   FaClock,
-  FaSave,
   FaMoneyBillWave,
   FaUniversity,
   FaMobileAlt,
   FaCreditCard,
-  FaExclamationTriangle,
-  FaChevronLeft,
-  FaChevronRight,
   FaFileInvoice,
   FaCheckCircle,
 } from "react-icons/fa";
 import { toast } from "react-toastify";
-import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import DashboardCard from "./payment/DashboardCard";
 import PaymentFilters from "./payment/PaymentFilters";
@@ -43,42 +27,8 @@ import StatusBadge from "./payment/StatusBadge";
 
 import roomService from "../../services/admin/roomService";
 import studentService from "../../services/admin/studentService";
-
-// Status Badge component
-// const StatusBadge = ({ status }) => {
-//   switch (status) {
-//     case "paid":
-//       return (
-//         <span className="px-2 py-1 rounded-full text-xs bg-green-100 text-green-800 font-medium">
-//           Đã thanh toán
-//         </span>
-//       );
-//     case "pending":
-//       return (
-//         <span className="px-2 py-1 rounded-full text-xs bg-yellow-100 text-yellow-800 font-medium">
-//           Chờ thanh toán
-//         </span>
-//       );
-//     case "overdue":
-//       return (
-//         <span className="px-2 py-1 rounded-full text-xs bg-red-100 text-red-800 font-medium">
-//           Quá hạn
-//         </span>
-//       );
-//     case "cancelled":
-//       return (
-//         <span className="px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-800 font-medium">
-//           Đã hủy
-//         </span>
-//       );
-//     default:
-//       return (
-//         <span className="px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-800 font-medium">
-//           {status}
-//         </span>
-//       );
-//   }
-// };
+import paymentService from "../../services/admin/paymentService";
+import roomAllocationService from "../../services/admin/roomAllocationService";
 
 const Payments = () => {
   // State declarations
@@ -89,7 +39,9 @@ const Payments = () => {
   // State for rooms and students data
   const [rooms, setRooms] = useState([]);
   const [students, setStudents] = useState([]);
-  const [studentRoomMap, setStudentRoomMap] = useState({});
+
+  // State Active Allocaions
+  const [activeAllocations, setActiveAllocations] = useState([]);
 
   // State for dashboard stats
   const [stats, setStats] = useState({
@@ -142,75 +94,103 @@ const Payments = () => {
   });
 
   // Effects
-  // Fetch payments, rooms, and students data
+  // Fetch payments, rooms, students and active allocation data
   useEffect(() => {
     const fetchData = async () => {
       setIsLoading(true);
       try {
-        // In a real app, this would be API calls
-        // const roomsResponse = await api.get("/rooms");
+        // Lấy dữ liệu phòng, sinh viên và phân phòng
         const roomsResponse = await roomService.getAllRooms();
         const studentsResponse = await studentService.getAllStudents();
-        const paymentsResponse = await api.get("/payments");
+        const allocationsResponse =
+          await roomAllocationService.getAllAllocations();
 
-        // For demonstration purposes, using setTimeout to simulate API delay
-        setTimeout(() => {
-          setRooms(roomsResponse);
-          setStudents(studentsResponse);
+        // Lọc phân phòng đang hoạt động (DANGKY)
+        const activeAllocationsData = allocationsResponse.filter(
+          (allocation) => allocation.status === "DANGKY"
+        );
 
-          // Enrich payment data with student and room info
-          const enrichedPayments = paymentsResponse.data.map((payment) => ({
-            ...payment,
-            student: studentsResponse.find((s) => s.id === payment.student_id),
-            room: roomsResponse.find((r) => r.id === payment.room_id),
-          }));
+        // Làm phong phú dữ liệu phân phòng với thông tin sinh viên và phòng
+        const enrichedAllocations = activeAllocationsData.map((allocation) => {
+          const student = studentsResponse.find(
+            (s) => s.id === allocation.student_id
+          );
+          const room = roomsResponse.find((r) => r.id === allocation.room_id);
+          return {
+            ...allocation,
+            student,
+            room,
+          };
+        });
+
+        // Lưu lại phòng, sinh viên và phân phòng
+        setRooms(roomsResponse);
+        setStudents(studentsResponse);
+        setActiveAllocations(enrichedAllocations);
+
+        // Lấy dữ liệu thanh toán
+        const paymentsResponse = await paymentService.getAllPayments();
+
+        // Xử lý dữ liệu thanh toán
+        if (paymentsResponse && Array.isArray(paymentsResponse)) {
+          // Làm phong phú dữ liệu thanh toán với thông tin phân phòng, sinh viên và phòng
+          const enrichedPayments = paymentsResponse.map((payment) => {
+            const allocation = payment.roomAllocation;
+            return {
+              ...payment,
+              student: allocation?.student || {},
+              room: allocation?.room || {},
+            };
+          });
 
           setPayments(enrichedPayments);
           setFilteredPayments(enrichedPayments);
 
-          // Calculate student-room mapping
-          const studentRoomMapping = {};
-          enrichedPayments.forEach((payment) => {
-            if (
-              payment.payment_status === "paid" ||
-              payment.payment_status === "pending"
-            ) {
-              studentRoomMapping[payment.student_id] = payment.room_id;
-            }
-          });
-          setStudentRoomMap(studentRoomMapping);
-
-          // Calculate stats
-          const totalAmount = enrichedPayments.reduce(
-            (sum, payment) =>
-              payment.payment_status === "paid"
-                ? sum + parseFloat(payment.amount)
-                : sum,
-            0
-          );
-
+          // Tính toán thống kê
+          calculateStats(enrichedPayments);
+        } else {
+          setPayments([]);
+          setFilteredPayments([]);
           setStats({
-            totalPayments: enrichedPayments.length,
-            totalPaid: enrichedPayments.filter(
-              (payment) => payment.payment_status === "paid"
-            ).length,
-            totalPending: enrichedPayments.filter(
-              (payment) => payment.payment_status === "pending"
-            ).length,
-            totalAmount: totalAmount,
+            totalPayments: 0,
+            totalPaid: 0,
+            totalPending: 0,
+            totalAmount: 0,
           });
-
-          setIsLoading(false);
-        }, 1000);
+        }
       } catch (error) {
         console.error("Error fetching data:", error);
-        toast.error("Không thể tải dữ liệu thanh toán. Vui lòng thử lại sau.");
+        toast.error("Không thể tải dữ liệu. Vui lòng thử lại sau.");
+      } finally {
         setIsLoading(false);
       }
     };
 
     fetchData();
   }, []);
+
+  // Hàm tính toán thống kê
+  const calculateStats = (payments) => {
+    if (!Array.isArray(payments)) return;
+
+    const totalAmount = payments.reduce(
+      (sum, payment) =>
+        payment.payment_status === "PAID"
+          ? sum + parseFloat(payment.amount)
+          : sum,
+      0
+    );
+
+    setStats({
+      totalPayments: payments.length,
+      totalPaid: payments.filter((payment) => payment.payment_status === "PAID")
+        .length,
+      totalPending: payments.filter(
+        (payment) => payment.payment_status === "PENDING"
+      ).length,
+      totalAmount,
+    });
+  };
 
   // Apply filters, search and sort
   useEffect(() => {
@@ -314,17 +294,15 @@ const Payments = () => {
     });
   };
 
+  // Reset form data
   const resetFormData = () => {
     setFormData({
-      student_id: "",
-      room_id: "",
+      room_allocation_id: "",
       amount: "",
       payment_date: new Date(),
-      payment_status: "pending",
-      payment_method: "cash",
+      payment_status: "PENDING",
+      payment_method: "CASH",
       notes: "",
-      created_by: "admin",
-      updated_by: null,
     });
   };
 
@@ -383,91 +361,143 @@ const Payments = () => {
     setShowReceiptModal(true);
   };
 
+  // Create payment
   const handleAddPayment = async (e) => {
     e.preventDefault();
+
     try {
       setIsLoading(true);
 
-      // In a real app, this would be an API call
-      const response = await api.post("/payments", formData);
+      // Format date
+      const formattedDate = formData.payment_date.toISOString().split("T")[0];
 
-      // Enrich the new payment with student and room info
-      const newPayment = {
-        ...response.data,
-        student: students.find((s) => s.id === formData.student_id),
-        room: rooms.find((r) => r.id === formData.room_id),
+      const paymentData = {
+        room_allocation_id: parseInt(formData.room_allocation_id),
+        amount: parseFloat(formData.amount),
+        payment_date: formattedDate,
+        payment_status: formData.payment_status,
+        payment_method: formData.payment_method,
+        notes: formData.notes || "",
       };
 
-      setPayments([...payments, newPayment]);
+      // Sử dụng service để tạo thanh toán mới
+      const response = await paymentService.createPayment(paymentData);
 
-      setShowAddModal(false);
-      resetFormData();
+      // Tìm phân phòng tương ứng
+      const allocation = activeAllocations.find(
+        (a) => a.id === parseInt(formData.room_allocation_id)
+      );
 
-      toast.success("Khoản thu đã được thêm thành công!");
-      setIsLoading(false);
+      if (allocation) {
+        // Làm phong phú dữ liệu thanh toán
+        const enrichedPayment = {
+          ...response,
+          roomAllocation: allocation,
+          student: allocation.student,
+          room: allocation.room,
+        };
+
+        // Cập nhật state
+        setPayments((prevPayments) => [...prevPayments, enrichedPayment]);
+        setFilteredPayments((prevFilteredPayments) => [
+          ...prevFilteredPayments,
+          enrichedPayment,
+        ]);
+
+        // Cập nhật thống kê
+        calculateStats([...payments, enrichedPayment]);
+
+        // Đóng modal và thông báo
+        setShowAddModal(false);
+        resetFormData();
+        toast.success("Thêm khoản thanh toán thành công");
+      } else {
+        toast.error("Không tìm thấy thông tin phân phòng");
+      }
     } catch (error) {
-      console.error("Error adding payment:", error);
-      toast.error("Không thể thêm khoản thu. Vui lòng thử lại sau.");
+      console.error("Error creating payment:", error);
+      toast.error(
+        error.response?.data?.message || "Không thể thêm khoản thanh toán"
+      );
+    } finally {
       setIsLoading(false);
     }
   };
 
+  // Update payment
   const handleUpdatePayment = async (e) => {
     e.preventDefault();
+
     try {
       setIsLoading(true);
 
-      // In a real app, this would be an API call
-      const response = await api.put(`/payments/${formData.id}`, formData);
+      const formattedDate = formData.payment_date.toISOString().split("T")[0];
 
-      // Update the payments array
-      const updatedPayments = payments.map((payment) => {
-        if (payment.id === formData.id) {
-          return {
-            ...response.data,
-            student: students.find((s) => s.id === formData.student_id),
-            room: rooms.find((r) => r.id === formData.room_id),
-          };
-        }
-        return payment;
-      });
+      const updateData = {
+        amount: parseFloat(formData.amount),
+        payment_date: formattedDate,
+        payment_status: formData.payment_status,
+        payment_method: formData.payment_method,
+        notes: formData.notes || "",
+      };
+
+      // Sử dụng service mới
+      const response = await paymentService.updatePayment(
+        selectedPayment.id,
+        updateData
+      );
+
+      // Cập nhật state
+      const updatedPayments = payments.map((payment) =>
+        payment.id === selectedPayment.id
+          ? { ...payment, ...response }
+          : payment
+      );
 
       setPayments(updatedPayments);
+      setFilteredPayments(
+        filteredPayments.map((payment) =>
+          payment.id === selectedPayment.id
+            ? { ...payment, ...response }
+            : payment
+        )
+      );
 
+      // Đóng modal và thông báo
       setShowEditModal(false);
       resetFormData();
-
-      toast.success("Khoản thu đã được cập nhật thành công!");
-      setIsLoading(false);
+      toast.success("Cập nhật khoản thanh toán thành công");
     } catch (error) {
       console.error("Error updating payment:", error);
-      toast.error("Không thể cập nhật khoản thu. Vui lòng thử lại sau.");
+      toast.error(error.message || "Không thể cập nhật khoản thanh toán");
+    } finally {
       setIsLoading(false);
     }
   };
 
+  // Delete payment
   const handleDeletePayment = async () => {
     try {
       setIsLoading(true);
 
-      // In a real app, this would be an API call
-      await api.delete(`/payments/${selectedPayment.id}`);
+      // Sử dụng service mới
+      await paymentService.deletePayment(selectedPayment.id);
 
-      // Update the payments array
-      const updatedPayments = payments.filter(
-        (payment) => payment.id !== selectedPayment.id
+      // Cập nhật state
+      setPayments(
+        payments.filter((payment) => payment.id !== selectedPayment.id)
+      );
+      setFilteredPayments(
+        filteredPayments.filter((payment) => payment.id !== selectedPayment.id)
       );
 
-      setPayments(updatedPayments);
-
+      // Đóng modal và thông báo
       setShowDeleteModal(false);
-      setSelectedPayment(null);
-
-      toast.success("Khoản thu đã được xóa thành công!");
-      setIsLoading(false);
+      toast.success("Xóa khoản thanh toán thành công");
     } catch (error) {
       console.error("Error deleting payment:", error);
-      toast.error("Không thể xóa khoản thu. Vui lòng thử lại sau.");
+      toast.error(error.message || "Không thể xóa khoản thanh toán");
+    } finally {
       setIsLoading(false);
     }
   };
@@ -476,11 +506,9 @@ const Payments = () => {
     try {
       setIsLoading(true);
 
-      // In a real app, this would be an API call
       const updatedPayment = {
         ...payment,
-        payment_status: "paid",
-        updated_by: "admin", // Current user would come from auth context
+        payment_status: "PAID",
       };
 
       const response = await api.put(`/payments/${payment.id}`, updatedPayment);
@@ -516,11 +544,9 @@ const Payments = () => {
     try {
       setIsLoading(true);
 
-      // In a real app, this would be an API call
       const updatedPayment = {
         ...payment,
-        payment_status: "overdue",
-        updated_by: "admin", // Current user would come from auth context
+        payment_status: "OVERDUE",
       };
 
       const response = await api.put(`/payments/${payment.id}`, updatedPayment);
@@ -824,9 +850,7 @@ const Payments = () => {
         handleAddPayment={handleAddPayment}
         resetFormData={resetFormData}
         setShowAddModal={setShowAddModal}
-        rooms={rooms}
-        students={students}
-        studentRoomMap={studentRoomMap}
+        allocations={activeAllocations}
       />
 
       <EditPaymentModal

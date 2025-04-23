@@ -79,11 +79,7 @@ const RoomAllocation = () => {
       setIsLoading(true);
       try {
         const roomsData = await roomService.getAllRooms();
-        console.log(" fetchData ~ dataRooms:", roomsData);
-
         const studentsData = await studentService.getAllStudents();
-        console.log(" fetchData ~ dataStudents:", studentsData);
-
         const allocationsData = await roomAllocationService.getAllAllocations();
 
         // Enrich allocations with room and student data
@@ -347,7 +343,7 @@ const RoomAllocation = () => {
       console.log(" handleAddAllocation ~ response:", response);
 
       // Lấy dữ liệu từ response
-      const newAllocation = response.data;
+      const newAllocation = response;
 
       // Tìm thông tin sinh viên và phòng để làm phong phú dữ liệu
       const selectedStudent = students.find(

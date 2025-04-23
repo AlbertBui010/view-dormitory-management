@@ -1,3 +1,4 @@
+import React from "react";
 import DatePicker from "react-datepicker";
 import { FaSave, FaTimes } from "react-icons/fa";
 import {
@@ -13,9 +14,7 @@ const AddPaymentModal = ({
   handleAddPayment,
   resetFormData,
   setShowAddModal,
-  rooms,
-  students,
-  studentRoomMap,
+  allocations,
 }) => {
   if (!showAddModal) return null;
 
@@ -24,21 +23,7 @@ const AddPaymentModal = ({
     setShowAddModal(false);
   };
 
-  const handleStudentChange = (e) => {
-    const studentId = e.target.value;
-    const roomId = studentRoomMap[studentId] || "";
-
-    handleInputChange({
-      target: { name: "student_id", value: studentId },
-    });
-
-    // Auto-select room if student already has a room assigned
-    if (roomId) {
-      handleInputChange({
-        target: { name: "room_id", value: roomId },
-      });
-    }
-  };
+  console.log("DATA:::", allocations);
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
@@ -55,43 +40,23 @@ const AddPaymentModal = ({
 
         <form onSubmit={handleAddPayment} className="p-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-            {/* Student Selection */}
+            {/* Room Allocation Selection */}
             <div>
               <label className="block text-gray-700 font-medium mb-2">
-                Sinh viên <span className="text-red-600">*</span>
+                Phân phòng <span className="text-red-600">*</span>
               </label>
               <select
-                name="student_id"
-                value={formData.student_id}
-                onChange={handleStudentChange}
-                className="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                required
-              >
-                <option value="">Chọn sinh viên</option>
-                {students.map((student) => (
-                  <option key={student.id} value={student.id}>
-                    {student.name} ({student.id})
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* Room Selection */}
-            <div>
-              <label className="block text-gray-700 font-medium mb-2">
-                Phòng <span className="text-red-600">*</span>
-              </label>
-              <select
-                name="room_id"
-                value={formData.room_id}
+                name="room_allocation_id"
+                value={formData.room_allocation_id}
                 onChange={handleInputChange}
                 className="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 required
               >
-                <option value="">Chọn phòng</option>
-                {rooms.map((room) => (
-                  <option key={room.id} value={room.id}>
-                    {room.room_number} (Tòa {room.Dormitory.name})
+                <option value="">Chọn phân phòng</option>
+                {allocations.map((allocation) => (
+                  <option key={allocation.id} value={allocation.id}>
+                    SV: {allocation.student.name} - Phòng:{" "}
+                    {allocation.room.room_number}
                   </option>
                 ))}
               </select>
@@ -111,6 +76,7 @@ const AddPaymentModal = ({
                 placeholder="Nhập số tiền"
                 required
                 min="0"
+                step="0.01"
               />
             </div>
 
@@ -121,18 +87,19 @@ const AddPaymentModal = ({
               </label>
               <DatePicker
                 selected={formData.payment_date}
-                onChange={handleDateChange}
+                onChange={(date) => handleDateChange(date, "payment_date")}
                 className="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 dateFormat="dd/MM/yyyy"
                 placeholderText="Chọn ngày"
                 maxDate={new Date()}
+                required
               />
             </div>
 
             {/* Payment Status */}
             <div>
               <label className="block text-gray-700 font-medium mb-2">
-                Trạng thái <span className="text-red-600">*</span>
+                Trạng thái thanh toán <span className="text-red-600">*</span>
               </label>
               <select
                 name="payment_status"
@@ -141,7 +108,7 @@ const AddPaymentModal = ({
                 className="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 required
               >
-                <option value="pending">Chờ thanh toán</option>
+                <option value="">Chọn trạng thái</option>
                 {Object.entries(paymentStatusLabels).map(([value, label]) => (
                   <option key={value} value={value}>
                     {label}
@@ -162,6 +129,7 @@ const AddPaymentModal = ({
                 className="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 required
               >
+                <option value="">Chọn phương thức</option>
                 {Object.entries(paymentMethodLabels).map(([value, label]) => (
                   <option key={value} value={value}>
                     {label}
@@ -171,14 +139,14 @@ const AddPaymentModal = ({
             </div>
           </div>
 
-          {/* Notes */}
+          {/* Notes (optional field) */}
           <div className="mb-4">
             <label className="block text-gray-700 font-medium mb-2">
               Ghi chú
             </label>
             <textarea
               name="notes"
-              value={formData.notes}
+              value={formData.notes || ""}
               onChange={handleInputChange}
               className="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
               rows="3"

@@ -17,7 +17,7 @@ const AddStudentModal = ({ onClose, onSubmit }) => {
     address: "",
     major: "",
     year: "",
-    status: "ACTIVE",
+    status: "DANGHOC",
     password: "",
   });
 
