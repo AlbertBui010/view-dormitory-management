@@ -28,6 +28,16 @@ jobs:
       - name: 🛠️ Build Vite project
         run: npm run build || echo "No build script, skipping..."
 
+      - name: 🧹 Clean dist on VPS before upload
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.HOST_PRODUCTION }}
+          username: ${{ secrets.USERNAME_PRODUCTION }}
+          password: ${{ secrets.PASSWORD_PRODUCTION }}
+          port: ${{ secrets.PORT_PRODUCTION }}
+          script: |
+            rm -rf /home/ktx/dorm-client/dist
+
       - name: 📤 Upload dist to VPS
         uses: appleboy/scp-action@v0.1.4
         with:
