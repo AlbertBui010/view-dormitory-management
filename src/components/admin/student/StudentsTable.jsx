@@ -7,7 +7,11 @@ import {
   FaSortAmountDown,
 } from "react-icons/fa";
 import StatusBadge from "./StatusBadge";
-import { studentMajorsLabels } from "../../../constant/constants";
+import {
+  roomAllocationStatus,
+  roomStatusLabels,
+  studentMajorsLabels,
+} from "../../../constant/constants";
 
 const StudentsTable = ({
   students,
@@ -17,6 +21,7 @@ const StudentsTable = ({
   openEditModal,
   openDeleteModal,
 }) => {
+  console.log("STU", students);
   return (
     <div className="overflow-x-auto">
       <table className="min-w-full divide-y divide-gray-200">
@@ -134,9 +139,25 @@ const StudentsTable = ({
                   {student.email}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {student.roomAssigned ? (
-                    <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full">
-                      {student.roomAssigned}
+                  {student.RoomAllocations &&
+                  student.RoomAllocations.length > 0 ? (
+                    <span
+                      className={`px-2 py-1 rounded-full ${
+                        student.RoomAllocations[0].status === "DANGKY"
+                          ? "bg-yellow-100 text-yellow-800"
+                          : student.RoomAllocations[0].status === "DANGO"
+                          ? "bg-green-100 text-green-800"
+                          : student.RoomAllocations[0].status === "DAKETTHUC"
+                          ? "bg-blue-100 text-blue-800"
+                          : student.RoomAllocations[0].status === "DAHUY"
+                          ? "bg-red-100 text-red-800"
+                          : "bg-gray-100 text-gray-800"
+                      }`}
+                    >
+                      {student.RoomAllocations[0].Room.room_number} -{" "}
+                      {roomAllocationStatus[
+                        student.RoomAllocations[0].status
+                      ] || student.RoomAllocations[0].status}
                     </span>
                   ) : (
                     <span className="text-gray-400">Chưa phân phòng</span>

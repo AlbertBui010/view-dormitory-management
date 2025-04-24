@@ -298,8 +298,6 @@ const Rooms = () => {
         roomData
       );
 
-      console.log(":::", updatedRoom);
-
       if (updatedRoom && updatedRoom.status && updatedRoom.message) {
         toast.error(updatedRoom.message);
         return false;

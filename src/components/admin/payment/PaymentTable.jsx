@@ -10,6 +10,7 @@ import {
   FaTrash,
 } from "react-icons/fa";
 import StatusBadge from "./StatusBadge";
+import { paymentStatusLabels } from "../../../constant/constants";
 
 const PaymentTable = ({
   payments,
@@ -185,34 +186,34 @@ const PaymentTable = ({
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                 <div className="flex flex-col">
                   <span className="font-medium text-gray-900">
-                    {payment.student?.fullName}
+                    {payment?.roomAllocation?.Student?.name}
                   </span>
                   <span className="text-xs text-gray-500">
-                    {payment.student?.id}
+                    {payment?.roomAllocation?.student_id}
                   </span>
                 </div>
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                 <div className="flex flex-col">
                   <span className="font-medium text-gray-900">
-                    {payment.room?.room_number}
+                    {payment?.roomAllocation?.Room?.room_number}
                   </span>
                   <span className="text-xs text-gray-500">
-                    Tòa {payment.room?.building}
+                    Tòa {payment?.roomAllocation?.Room?.Dormitory?.name}
                   </span>
                 </div>
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                {formatCurrency(payment.amount)}
+                {formatCurrency(payment?.amount)}
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                {formatDate(payment.payment_date)}
+                {formatDate(payment?.payment_date)}
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                {getPaymentMethodText(payment.payment_method)}
+                {getPaymentMethodText(payment?.payment_method)}
               </td>
               <td className="px-6 py-4 whitespace-nowrap">
-                <StatusBadge status={payment.payment_status} />
+                <StatusBadge status={payment?.payment_status} />
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                 <div className="flex justify-end space-x-2">
@@ -226,7 +227,7 @@ const PaymentTable = ({
                   </button>
 
                   {/* Print receipt button - only for paid payments */}
-                  {payment.payment_status === "paid" && (
+                  {payment.payment_status === paymentStatusLabels.PAID && (
                     <button
                       onClick={() => openReceiptModal(payment)}
                       className="text-green-600 hover:text-green-900"
@@ -246,8 +247,8 @@ const PaymentTable = ({
                   </button>
 
                   {/* Mark as paid button - only for pending or overdue payments */}
-                  {(payment.payment_status === "pending" ||
-                    payment.payment_status === "overdue") && (
+                  {(payment.payment_status === paymentStatusLabels.UNPAID ||
+                    payment.payment_status === paymentStatusLabels.OVERDUE) && (
                     <button
                       onClick={() => markAsPaid(payment)}
                       className="text-green-600 hover:text-green-900"
@@ -258,7 +259,7 @@ const PaymentTable = ({
                   )}
 
                   {/* Mark as overdue - only for pending payments */}
-                  {payment.payment_status === "pending" && (
+                  {payment.payment_status === paymentStatusLabels.UNPAID && (
                     <button
                       onClick={() => markAsOverdue(payment)}
                       className="text-yellow-600 hover:text-yellow-900"

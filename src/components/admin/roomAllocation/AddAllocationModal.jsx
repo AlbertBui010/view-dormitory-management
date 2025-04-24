@@ -106,11 +106,7 @@ const AddAllocationModal = ({
                   onChange={handleInputChange}
                   className="w-full p-2 border border-gray-300 rounded-md"
                 >
-                  {Object.entries(roomAllocationStatus).map(([key, value]) => (
-                    <option key={key} value={key}>
-                      {value}
-                    </option>
-                  ))}
+                  <option value="DANGKY">Đăng ký</option>
                 </select>
               </div>
             </div>

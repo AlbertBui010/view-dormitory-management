@@ -1,5 +1,9 @@
 import DatePicker from "react-datepicker";
 import { FaSave, FaTimes } from "react-icons/fa";
+import {
+  paymentMethodLabels,
+  paymentStatusLabels,
+} from "../../../constant/constants";
 
 const EditPaymentModal = ({
   showEditModal,
@@ -10,8 +14,6 @@ const EditPaymentModal = ({
   handleUpdatePayment,
   resetFormData,
   setShowEditModal,
-  rooms,
-  students,
 }) => {
   if (!showEditModal || !selectedPayment) return null;
 
@@ -40,20 +42,17 @@ const EditPaymentModal = ({
               <label className="block text-gray-700 font-medium mb-2">
                 Sinh viên <span className="text-red-600">*</span>
               </label>
-              <select
+              <div
                 name="student_id"
                 value={formData.student_id}
                 onChange={handleInputChange}
                 className="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 required
               >
-                <option value="">Chọn sinh viên</option>
-                {students.map((student) => (
-                  <option key={student.id} value={student.id}>
-                    {student.fullName} ({student.id})
-                  </option>
-                ))}
-              </select>
+                <option value={selectedPayment.roomAllocation.Student.id}>
+                  {selectedPayment.roomAllocation.Student.name}
+                </option>
+              </div>
             </div>
 
             {/* Room Selection */}
@@ -61,20 +60,17 @@ const EditPaymentModal = ({
               <label className="block text-gray-700 font-medium mb-2">
                 Phòng <span className="text-red-600">*</span>
               </label>
-              <select
+              <div
                 name="room_id"
                 value={formData.room_id}
                 onChange={handleInputChange}
                 className="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 required
               >
-                <option value="">Chọn phòng</option>
-                {rooms.map((room) => (
-                  <option key={room.id} value={room.id}>
-                    {room.room_number} (Tòa {room.building})
-                  </option>
-                ))}
-              </select>
+                <option value={selectedPayment.roomAllocation.Room.id}>
+                  {selectedPayment.roomAllocation.Room.room_number}
+                </option>
+              </div>
             </div>
 
             {/* Amount */}
@@ -82,16 +78,16 @@ const EditPaymentModal = ({
               <label className="block text-gray-700 font-medium mb-2">
                 Số tiền <span className="text-red-600">*</span>
               </label>
-              <input
-                type="number"
+              <div
+                // type="number"
                 name="amount"
-                value={formData.amount}
-                onChange={handleInputChange}
+                value={selectedPayment.amount}
                 className="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                placeholder="Nhập số tiền"
-                required
-                min="0"
-              />
+              >
+                <option value={selectedPayment.amount}>
+                  {selectedPayment.amount}
+                </option>
+              </div>
             </div>
 
             {/* Payment Date */}
@@ -120,10 +116,11 @@ const EditPaymentModal = ({
                 className="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 required
               >
-                <option value="pending">Chờ thanh toán</option>
-                <option value="paid">Đã thanh toán</option>
-                <option value="overdue">Quá hạn</option>
-                <option value="cancelled">Đã hủy</option>
+                {Object.entries(paymentStatusLabels).map(([value, label]) => (
+                  <option key={value} value={value}>
+                    {label}
+                  </option>
+                ))}
               </select>
             </div>
 
@@ -139,9 +136,11 @@ const EditPaymentModal = ({
                 className="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 required
               >
-                <option value="cash">Tiền mặt</option>
-                <option value="bank_transfer">Chuyển khoản</option>
-                <option value="momo">Ví Momo</option>
+                {Object.entries(paymentMethodLabels).map(([value, label]) => (
+                  <option key={value} value={value}>
+                    {label}
+                  </option>
+                ))}
               </select>
             </div>
           </div>
@@ -169,7 +168,7 @@ const EditPaymentModal = ({
             </p>
             <p className="text-gray-600 mb-1">
               <span className="font-medium">Ngày tạo:</span>{" "}
-              {new Date(selectedPayment.created_at).toLocaleDateString("vi-VN")}
+              {new Date(selectedPayment.createdAt).toLocaleDateString("vi-VN")}
             </p>
             <p className="text-gray-600">
               <span className="font-medium">Cập nhật lần cuối:</span>{" "}

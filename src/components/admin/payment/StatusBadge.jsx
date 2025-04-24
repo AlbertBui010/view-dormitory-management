@@ -1,25 +1,25 @@
 // Status Badge Component
 const StatusBadge = ({ status }) => {
   switch (status) {
-    case "paid":
+    case "PAID":
       return (
         <span className="px-2 py-1 rounded-full text-xs bg-green-100 text-green-800">
           Đã thanh toán
         </span>
       );
-    case "pending":
+    case "UNPAID":
       return (
         <span className="px-2 py-1 rounded-full text-xs bg-yellow-100 text-yellow-800">
-          Chờ thanh toán
+          Chưa thanh toán
         </span>
       );
-    case "overdue":
+    case "OVERDUE":
       return (
         <span className="px-2 py-1 rounded-full text-xs bg-red-100 text-red-800">
           Quá hạn
         </span>
       );
-    case "cancelled":
+    case "CANCELLED":
       return (
         <span className="px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-800">
           Đã hủy

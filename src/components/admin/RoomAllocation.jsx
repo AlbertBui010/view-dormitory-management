@@ -340,7 +340,6 @@ const RoomAllocation = () => {
       const response = await roomAllocationService.createAllocation(
         allocationData
       );
-      console.log(" handleAddAllocation ~ response:", response);
 
       // Lấy dữ liệu từ response
       const newAllocation = response;

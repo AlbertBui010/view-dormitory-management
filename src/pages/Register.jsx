@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import authService from "../services/authService";
 import { toast } from "react-toastify";
+import { studentMajorsLabels, studentYearLabels } from "../constant/constants";
 
 const Register = () => {
   const navigate = useNavigate();
@@ -246,16 +247,23 @@ const Register = () => {
               </div>
 
               <div>
-                <input
-                  type="text"
+                <select
                   name="major"
-                  placeholder="Ngành học"
                   value={formData.major}
                   onChange={handleChange}
                   className={`w-full p-3 bg-gray-100 rounded-[50px] shadow-xl border ${
                     errors.major ? "border-red-500" : "border-gray-300"
                   }`}
-                />
+                >
+                  <option value="" disabled hidden>
+                    Chọn ngành học
+                  </option>
+                  {Object.entries(studentMajorsLabels).map(([value, label]) => (
+                    <option key={value} value={value}>
+                      {label}
+                    </option>
+                  ))}
+                </select>
                 {errors.major && (
                   <p className="text-red-500 text-sm mt-1 ml-4">
                     {errors.major}
@@ -264,16 +272,23 @@ const Register = () => {
               </div>
 
               <div>
-                <input
-                  type="text"
+                <select
                   name="year"
-                  placeholder="Khóa"
                   value={formData.year}
                   onChange={handleChange}
                   className={`w-full p-3 bg-gray-100 rounded-[50px] shadow-xl border ${
                     errors.year ? "border-red-500" : "border-gray-300"
                   }`}
-                />
+                >
+                  <option value="" disabled hidden>
+                    Chọn khóa
+                  </option>
+                  {Object.entries(studentYearLabels).map(([value, label]) => (
+                    <option key={value} value={value}>
+                      {label}
+                    </option>
+                  ))}
+                </select>
                 {errors.year && (
                   <p className="text-red-500 text-sm mt-1 ml-4">
                     {errors.year}

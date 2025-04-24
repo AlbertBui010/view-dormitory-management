@@ -19,7 +19,6 @@ export const roomStatusLabels = {
   AVAILABLE: "Còn trống",
   OCCUPIED: "Đã thuê",
   MAINTENANCE: "Đang bảo trì",
-  RESERVED: "Đã đặt trước",
   CLOSED: "Đã đóng",
 };
 
@@ -56,7 +55,7 @@ export const paymentMethodLabels = {
 };
 
 export const paymentStatusLabels = {
-  PENDING: "Đang thanh toán",
+  UNPAID: "Chưa thanh toán",
   PAID: "Đã thanh toán",
   OVERDUE: "Quá hạn",
   CANCELLED: "Đã hủy",

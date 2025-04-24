@@ -29,8 +29,16 @@ import roomService from "../../services/admin/roomService";
 import studentService from "../../services/admin/studentService";
 import paymentService from "../../services/admin/paymentService";
 import roomAllocationService from "../../services/admin/roomAllocationService";
+import { useNavigate } from "react-router-dom";
+import {
+  paymentMethodLabels,
+  paymentStatusLabels,
+  roomAllocationStatus,
+} from "../../constant/constants";
 
 const Payments = () => {
+  const navigate = useNavigate();
+
   // State declarations
   const [payments, setPayments] = useState([]);
   const [filteredPayments, setFilteredPayments] = useState([]);
@@ -71,7 +79,7 @@ const Payments = () => {
     room_id: "",
     amount: "",
     payment_date: new Date(),
-    payment_status: "PENDING",
+    payment_status: "UNPAID",
     payment_method: "CASH",
     notes: "",
   });
@@ -101,13 +109,16 @@ const Payments = () => {
       try {
         // Lấy dữ liệu phòng, sinh viên và phân phòng
         const roomsResponse = await roomService.getAllRooms();
+        if (roomsResponse && roomsResponse?.status === 401) {
+          navigate("/login");
+        }
         const studentsResponse = await studentService.getAllStudents();
         const allocationsResponse =
           await roomAllocationService.getAllAllocations();
 
         // Lọc phân phòng đang hoạt động (DANGKY)
         const activeAllocationsData = allocationsResponse.filter(
-          (allocation) => allocation.status === "DANGKY"
+          (allocation) => allocation.status === roomAllocationStatus.DANGKY
         );
 
         // Làm phong phú dữ liệu phân phòng với thông tin sinh viên và phòng
@@ -133,21 +144,21 @@ const Payments = () => {
 
         // Xử lý dữ liệu thanh toán
         if (paymentsResponse && Array.isArray(paymentsResponse)) {
-          // Làm phong phú dữ liệu thanh toán với thông tin phân phòng, sinh viên và phòng
-          const enrichedPayments = paymentsResponse.map((payment) => {
-            const allocation = payment.roomAllocation;
-            return {
-              ...payment,
-              student: allocation?.student || {},
-              room: allocation?.room || {},
-            };
-          });
+          // // Làm phong phú dữ liệu thanh toán với thông tin phân phòng, sinh viên và phòng
+          // const enrichedPayments = paymentsResponse.map((payment) => {
+          //   const allocation = payment.roomAllocation;
+          //   return {
+          //     ...payment,
+          //     student: allocation?.student || {},
+          //     room: allocation?.room || {},
+          //   };
+          // });
 
-          setPayments(enrichedPayments);
-          setFilteredPayments(enrichedPayments);
+          setPayments(paymentsResponse);
+          setFilteredPayments(paymentsResponse);
 
           // Tính toán thống kê
-          calculateStats(enrichedPayments);
+          calculateStats(paymentsResponse);
         } else {
           setPayments([]);
           setFilteredPayments([]);
@@ -175,7 +186,7 @@ const Payments = () => {
 
     const totalAmount = payments.reduce(
       (sum, payment) =>
-        payment.payment_status === "PAID"
+        payment.payment_status === paymentStatusLabels.PAID
           ? sum + parseFloat(payment.amount)
           : sum,
       0
@@ -183,10 +194,11 @@ const Payments = () => {
 
     setStats({
       totalPayments: payments.length,
-      totalPaid: payments.filter((payment) => payment.payment_status === "PAID")
-        .length,
+      totalPaid: payments.filter(
+        (payment) => payment.payment_status === paymentStatusLabels.PAID
+      ).length,
       totalPending: payments.filter(
-        (payment) => payment.payment_status === "PENDING"
+        (payment) => payment.payment_status === paymentStatusLabels.UNPAID
       ).length,
       totalAmount,
     });
@@ -300,8 +312,8 @@ const Payments = () => {
       room_allocation_id: "",
       amount: "",
       payment_date: new Date(),
-      payment_status: "PENDING",
-      payment_method: "CASH",
+      payment_status: paymentStatusLabels.UNPAID,
+      payment_method: paymentMethodLabels.CASH,
       notes: "",
     });
   };
@@ -331,18 +343,17 @@ const Payments = () => {
 
   const openEditModal = (payment) => {
     setSelectedPayment(payment);
-    setFormData({
-      id: payment.id,
-      student_id: payment.student_id,
-      room_id: payment.room_id,
-      amount: payment.amount,
-      payment_date: new Date(payment.payment_date),
-      payment_status: payment.payment_status,
-      payment_method: payment.payment_method,
-      notes: payment.notes || "",
-      created_by: payment.created_by,
-      updated_by: "admin", // Current user would come from auth context
-    });
+    // setFormData({
+    //   id: payment.id,
+    //   student_id: payment.student_id,
+    //   room_id: payment.room_id,
+    //   amount: payment.amount,
+    //   payment_date: new Date(payment.payment_date),
+    //   payment_status: payment.payment_status,
+    //   payment_method: payment.payment_method,
+    //   notes: payment.notes || "",
+    // });
+    setFormData(payment);
     setShowEditModal(true);
   };
 
@@ -431,15 +442,14 @@ const Payments = () => {
     try {
       setIsLoading(true);
 
-      const formattedDate = formData.payment_date.toISOString().split("T")[0];
-
       const updateData = {
         amount: parseFloat(formData.amount),
-        payment_date: formattedDate,
+        payment_date: new Date(formData.payment_date),
         payment_status: formData.payment_status,
         payment_method: formData.payment_method,
         notes: formData.notes || "",
       };
+      console.log(" handleUpdatePayment ~ updateData:", updateData);
 
       // Sử dụng service mới
       const response = await paymentService.updatePayment(
@@ -508,7 +518,7 @@ const Payments = () => {
 
       const updatedPayment = {
         ...payment,
-        payment_status: "PAID",
+        payment_status: paymentStatusLabels.PAID,
       };
 
       const response = await api.put(`/payments/${payment.id}`, updatedPayment);
@@ -546,7 +556,7 @@ const Payments = () => {
 
       const updatedPayment = {
         ...payment,
-        payment_status: "OVERDUE",
+        payment_status: paymentStatusLabels.OVERDUE,
       };
 
       const response = await api.put(`/payments/${payment.id}`, updatedPayment);
