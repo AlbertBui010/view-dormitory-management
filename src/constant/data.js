@@ -9,6 +9,10 @@ import img_room7 from "/img/ktxnu2.jpg"
 import img_room8 from "/img/ktxnu3.jpg"
 import img_room9 from "/img/ktxnu4.jpg"
 import img_room10 from "/img/ktxnu5.jpg"
+import img4 from "/img/banner1.jpg"
+import img2 from "/img/banner2.jpg"
+import img3 from "/img/banner3.jpg"
+import img1 from "/img/banner4.jpg"
 
 export const dormitories = [
     {
@@ -193,3 +197,21 @@ export const rooms = [
     },
   ];
 
+  export const slide = [
+    {
+      image: img1,
+      content: "Đăng ký phòng ký túc xác ngay để nhận được giá ưu đãi",
+    },
+    {
+      image: img2,
+      content: "Dormanage cung cấp dịch phụ kí túc xá cho sinh viên với giá siêu sinh viên",
+    },
+    {
+      image: img3,
+      content: "Phòng sạch sẽ, đẹp đẽ, thoải mái, đầy đủ tiện nghi",
+    },
+    {
+      image: img4,
+      content: "Hỗ trợ sinh viên khó khăn",
+    },
+  ];

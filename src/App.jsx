@@ -13,9 +13,10 @@ import RoomAllocation from "./components/admin/RoomAllocation";
 import Payments from "./components/admin/Payments";
 import Dormitory from "./components/admin/Dormitory";
 import Reports from "./components/admin/Reports";
-
+import ScrollToTop from "./components/ScrollToTop";
 function App() {
   return (
+    
     <Router>
       <Routes>
         <Route path="/" element={<MainLayout />}>
@@ -36,6 +37,7 @@ function App() {
           <Route path="settings" element={<h1>Settings</h1>} />
         </Route>
       </Routes>
+      <ScrollToTop />
       <ToastContainer
         position="top-right"
         autoClose={2500}

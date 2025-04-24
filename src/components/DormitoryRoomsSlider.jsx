@@ -15,7 +15,7 @@ const DormitoryRoomsSlider = () => {
   );
 
   return (
-    <section className="w-[85%] mx-auto py-6 bg-gray-100y-100 min-h-screen shadow-2xl border border-gray-200">
+    <section className="w-[85%] mx-auto py-6 bg-gray-100y-100 min-h-screen shadow-2xl border border-gray-200 mt-[100px]">
       <div className="container mx-auto px-6">
         <h2 className="text-3xl md:text-4xl font-bold text-center text-yellow-700 mb-10 uppercase">
           Danh Sách Các Phòng Của Ký Túc Xá

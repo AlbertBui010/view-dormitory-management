@@ -96,7 +96,7 @@ const Login = () => {
   };
 
   return (
-    <div className="w-full h-screen flex bg-white">
+    <div className="w-full h-auto flex bg-white pt-[250px]">
       {/* Bên phải form */}
       <div className="w-[30%] h-auto flex flex-col p-20 bg-white mx-auto my-10 border border-transparent rounded-2xl shadow-2xl">
         <h1 className="text-[32px] uppercase font-bold text-yellow-500 text-center font-poppins">

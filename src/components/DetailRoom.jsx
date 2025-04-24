@@ -9,7 +9,7 @@ const DetailRoom = () => {
   if (!room) return <p className="text-center mt-10">Không tìm thấy phòng</p>;
 
   return (
-    <div className="w-full min-h-screen mt-10">
+    <div className="w-full min-h-screen p-[300px]">
       <div className="w-[80%] mx-auto">
       <h2 className="text-3xl font-bold  text-black uppercase mb-6">
               Chi tiết phòng
