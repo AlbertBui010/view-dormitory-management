@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { UserCircle, X } from "lucide-react";
-import logo from "/img/logo.png";
+import logo from "/img/logorbg.png";
 
 const Header = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
