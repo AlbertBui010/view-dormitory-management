@@ -186,19 +186,20 @@ const Payments = () => {
 
     const totalAmount = payments.reduce(
       (sum, payment) =>
-        payment.payment_status === paymentStatusLabels.PAID
+        payment.payment_status === "PAID"
           ? sum + parseFloat(payment.amount)
           : sum,
       0
     );
 
+    console.log("PAY:::", payments);
+
     setStats({
       totalPayments: payments.length,
-      totalPaid: payments.filter(
-        (payment) => payment.payment_status === paymentStatusLabels.PAID
-      ).length,
+      totalPaid: payments.filter((payment) => payment.payment_status === "PAID")
+        .length,
       totalPending: payments.filter(
-        (payment) => payment.payment_status === paymentStatusLabels.UNPAID
+        (payment) => payment.payment_status === "UNPAID"
       ).length,
       totalAmount,
     });
